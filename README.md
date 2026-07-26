@@ -6,10 +6,10 @@ Private, single-operator communications planning and publishing software for Sta
 
 - Static application: `communications/` contains route shells, the shared industrial stylesheet, browser modules, and canonical repository data.
 - Protected API: `functions/communications/api/[[path]].js` exposes same-origin Pages Functions endpoints beneath the Cloudflare Access policy.
-- Security: `worker/core/security.js` verifies the Access JWT signature, issuer, audience, expiry, and Jamie's configured identity on every privileged request. Requests fail closed; only GET/POST and same-origin browser requests are accepted.
+- Security: `worker/core/security.js` verifies the Access JWT signature, issuer, audience, expiry, and Jamie's configured identity on every privileged request. Requests fail closed; only the route-specific GET/POST/PATCH/DELETE methods and same-origin browser requests are accepted.
 - Orchestration: `worker/core/orchestrator.js` validates readiness, confirmation, destinations, schedules, stale records, and idempotency. Destinations complete independently.
 - Services: `worker/adapters/shopify.js` and `buffer.js` contain narrow, server-only GraphQL clients with timeouts, bounded retry, safe error mapping, mocks, and dry-run support.
-- Persistence: `worker/storage/publications.js` writes publication outcomes to `PUBLICATIONS_DB`; `migrations/0001_publication_results.sql` is additive and never changes repository content.
+- Persistence: `worker/storage/publications.js` writes publication outcomes and `worker/storage/assets.js` writes artwork metadata to `PUBLICATIONS_DB`; both migrations are additive and never change repository content. R2 stores unchanged image bytes.
 - Tests: Node's built-in test runner covers identity, request security, storage, orchestration, retries, partial failure, and adapter contracts. Fixtures never make public posts.
 
 Public CN-001 artwork remains at its established `/assets/company-notices/cn-001/` URLs. All Desk code, data, Functions, Settings, and Publishing routes remain under `/communications/*` and must stay protected by Cloudflare Access.
@@ -90,3 +90,17 @@ git status --short
 ```
 
 After deployment, anonymously verify `/communications/` and `/communications/api/health` redirect to Access, and each established `/assets/company-notices/cn-001/` URL returns `200 image/png`. Then perform the authenticated Settings and Publishing checks in Chrome.
+
+## Communication artwork workflow
+
+Artwork is owned by communications. The communication workspace calls same-origin protected endpoints under `/communications/api/assets`; `worker/assets/manager.js` coordinates validation, stable key generation, checksum deduplication, metadata, and object storage. `ARTWORK_BUCKET` stores unchanged image bytes in R2. `PUBLICATIONS_DB` stores metadata through `migrations/0002_communication_assets.sql`. The public GET/HEAD-only function at `/assets/communications/*` serves generated object keys without Access so Shopify and Buffer can retrieve them. All mutations still require Jamie's verified Cloudflare Access identity.
+
+Generated URLs follow `/assets/communications/{communication-id}/{asset-id}-{safe-filename}` and never derive an object key from browser input. Replacement keeps the existing URL. CN-001 remains at its three exact legacy paths and is seeded only as metadata.
+
+Run the complete validation with:
+
+```powershell
+npm.cmd run check
+```
+
+See `FINAL_SETUP.md` for R2/D1 commissioning, public routing, cache behaviour, and production verification. See `OPERATIONS.md` for the operator workflow.

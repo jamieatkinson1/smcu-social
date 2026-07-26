@@ -42,10 +42,10 @@ async function showLogin() {
   const button = document.querySelector("[data-local-login]");
   if (button) button.addEventListener("click", async () => { await auth.signIn(); location.replace(button.dataset.return); });
 }
-function showDashboard() {
+async function showDashboard() {
   document.title = "SMCU Communications Desk";
   const current = getCurrentCampaign(repository);
-  const queue = getPublishingQueue(repository);
+  const queue = getPublishingQueue(repository, await loadAssetMap());
   const recentPublication = queue.published[0]?.document || null;
   const systems = getSystemStatus(repository).filter((item) => ["repository", "shopify", "buffer", "cloudflareAccess"].includes(item.key));
   const view = { currentCampaign: current, progress: current ? calculateCampaignProgress(current) : null, nextAction: current ? getCampaignNextAction(current) : null, queue, recentPublication, systems };
@@ -64,14 +64,18 @@ function showRegister() {
   const documents = getDocumentsForSection(repository, section.slug);
   mount.innerHTML = renderShell(renderRegister(section, documents, documentHref), { route, active: "communications", session, breadcrumbs: [{ label: "Communications", href: route("communications/index.html") }, { label: section.title }] });
 }
-function showCommunication() {
-  const document = getDocument(repository, body.dataset.document || params.get("id"));
-  if (!document) throw new Error("Communication not found");
-  const resolved = { ...document, assets: getAssetsForCommunication(document, repository).map(toRenderableAsset) };
-  const campaign = getCampaignForCommunication(repository, document);
+async function showCommunication() {
+  const communication = getDocument(repository, body.dataset.document || params.get("id"));
+  if (!communication) throw new Error("Communication not found");
+  let assets;
+  try { assets=(await integrationApi.assets(communication.id)).assets; }
+  catch { assets=getAssetsForCommunication(communication,repository).map(toRenderableAsset).map((asset,index)=>({...asset,altText:asset.alt,primary:index===0,mimeType:`image/${String(asset.format||"png").toLowerCase()}`,size:asset.size?.bytes||0,storageKind:"legacy"})); }
+  const resolved = { ...communication, assets };
+  const campaign = getCampaignForCommunication(repository, communication);
   const context = campaign ? renderCommunicationCampaign(campaign, calculateCampaignProgress(campaign), getCampaignPhase(campaign), route) : "";
-  mount.innerHTML = renderShell(renderCommunication(resolved, context, getPublishingReadiness(document, repository), route), { route, active: "communications", session, breadcrumbs: [{ label: "Communications", href: route("communications/index.html") }, { label: document.id }] });
-  bindAssetActions(resolved.assets);
+  const runtimeRepository=await repositoryWithLiveSystems();
+  mount.innerHTML = renderShell(renderCommunication(resolved, context, getPublishingReadiness(communication, runtimeRepository, assets), route), { route, active: "communications", session, breadcrumbs: [{ label: "Communications", href: route("communications/index.html") }, { label: communication.id }] });
+  bindAssetActions(assets); bindArtworkManager(communication,assets);
 }
 function showCampaigns() {
   const views = repository.campaigns.map(campaignView);
@@ -82,7 +86,7 @@ function showCampaign() {
   if (!campaign) throw new Error("Campaign not found");
   mount.innerHTML = renderShell(renderCampaign(campaignView(campaign), route), { route, active: "campaigns", session, breadcrumbs: [{ label: "Campaigns", href: route("campaigns/index.html") }, { label: campaign.id }] });
 }
-async function showPublishing() { const runtimeRepository = await repositoryWithLiveSystems(); mount.innerHTML = renderShell(renderPublishing(getPublishingQueue(runtimeRepository), route), { route, active: "publishing", session }); bindPublishing(); }
+async function showPublishing() { const runtimeRepository = await repositoryWithLiveSystems(); mount.innerHTML = renderShell(renderPublishing(getPublishingQueue(runtimeRepository,await loadAssetMap()), route), { route, active: "publishing", session }); bindPublishing(); }
 async function showSettings() { mount.innerHTML = renderShell(renderSettings(getSystemStatus(repository), session, auth), { route, active: "settings", session }); await refreshIntegrationStatus(); }
 function showAsset() {
   const asset = getAsset(repository, params.get("id"));
@@ -106,9 +110,17 @@ function bindAssetBrowser() {
   const update = () => { const filtered = filterAssets(repository.assets, repository, Object.fromEntries(new FormData(form).entries())); results.innerHTML = renderAssetCards(filtered.map((asset) => ({ asset, usage: getAssetUsage(asset, repository) })), route); count.textContent = `${filtered.length} of ${repository.assets.length}`; bindCopyUrls(results); };
   form.addEventListener("input", update); form.addEventListener("change", update); form.addEventListener("reset", () => setTimeout(update)); controls.querySelector("[data-copy-library]").addEventListener("click", () => copyText(repository.assets.map((asset) => absolute(asset.url)).join("\n"), "Asset URLs copied")); update();
 }
+async function loadAssetMap(){const entries=await Promise.all(repository.documents.map(async communication=>{try{return [communication.id,(await integrationApi.assets(communication.id)).assets]}catch{return [communication.id,undefined]}}));return Object.fromEntries(entries)}
 async function repositoryWithLiveSystems() { try { const health=await integrationApi.health(); const connected=(state)=>state?.status==="connected"; const copy=structuredClone(repository); copy.systems.shopify={status:connected(health.shopify)?"Connected":"Not configured",note:health.shopify?.message||"Publishing connection verified"}; copy.systems.buffer={status:connected(health.buffer)?"Connected":"Not configured",note:health.buffer?.message||"Scheduling connection verified"}; return copy; } catch { return repository; } }
 async function refreshIntegrationStatus() { try { const health = await integrationApi.health(); const rows = document.querySelectorAll(".service-list>div"); const labels = { Shopify: health.shopify, Buffer: health.buffer, Instagram: health.buffer?.channels?.find((c) => String(c.service).toLowerCase()==="instagram"), Facebook: health.buffer?.channels?.find((c) => String(c.service).toLowerCase()==="facebook") }; rows.forEach((row) => { const label=row.querySelector("strong")?.textContent; const state=labels[label]; if(!state)return; const ok=state.status==="connected"||state.connected===true; row.querySelector(".service-state")?.classList.toggle("connected",ok); row.querySelector(".service-state")?.classList.toggle("disconnected",!ok); row.querySelector(":scope>span:nth-of-type(2)").textContent=ok?"Connected":"Not configured"; row.querySelector("small").textContent=ok?(state.name||"Connection verified"):state.message||"Connection required"; }); } catch { notify("Connection status unavailable"); } }
 function bindPublishing() { const dialog=document.querySelector(".publish-dialog"); if(!dialog)return; let current=null; const action=dialog.querySelector("[name=action]"); const schedule=dialog.querySelector("[data-schedule]"); const result=dialog.querySelector("[data-publish-result]"); action.addEventListener("change",()=>{schedule.hidden=action.value!=="schedule"}); document.querySelectorAll("[data-publish]").forEach(button=>button.addEventListener("click",()=>{current={communicationId:button.dataset.publish,modifiedDate:button.dataset.modified};dialog.querySelector("[data-publish-summary]").textContent=`${button.dataset.publish} - ${button.dataset.title}`;result.replaceChildren();dialog.showModal()})); dialog.querySelector("[data-confirm-publish]").addEventListener("click",async(event)=>{const destinations=[...dialog.querySelectorAll("[name=destination]:checked")].map(x=>x.value);const scheduledValue=dialog.querySelector("[name=scheduledTime]").value;const payload={...current,destinations,action:action.value,scheduledTime:action.value==="schedule"&&scheduledValue?new Date(scheduledValue).toISOString():null};const button=event.currentTarget;button.disabled=true;result.textContent="Checking publishing readiness...";try{const preview=await integrationApi.preview(payload);if(!preview.ready)throw Object.assign(new Error(preview.reasons.join(" ")),{details:{recovery:"Resolve the listed blockers."}});const exact=preview.destinations.join(", ");if(!window.confirm(`Publish ${preview.communication.id} to ${exact}?`)){result.textContent="Publication cancelled.";return}result.textContent="Publishing...";const response=await integrationApi.confirm({...payload,confirmed:true});result.innerHTML=response.results.map(item=>`<p><strong>${escapeHtml(item.destination)}</strong>: ${escapeHtml(item.status)}${item.recovery?` - ${escapeHtml(item.recovery)}`:""}</p>`).join("");}catch(error){result.textContent=`${error.message} ${error.details?.recovery||""}`.trim()}finally{button.disabled=false}}); }
+function bindArtworkManager(communication,assets){
+ const zone=document.querySelector("[data-dropzone]"),input=document.querySelector("[data-upload-input]"),progress=document.querySelector("[data-upload-progress]"),status=document.querySelector("[data-upload-status]");if(!zone)return;
+ const reload=()=>location.reload(); const report=message=>{status.textContent=message};
+ async function uploadFiles(files){const list=[...files];if(!list.length)return;progress.hidden=false;for(let index=0;index<list.length;index++){const file=list[index];report(`Uploading ${index+1} of ${list.length}: ${file.name}`);try{const result=await integrationApi.upload(communication.id,file,"",value=>{progress.value=((index+value/100)/list.length)*100});report(result.duplicate?`${file.name} already exists.`:`${file.name} uploaded.`)}catch(error){report(`${file.name}: ${error.message} ${error.details?.recovery||""}`.trim());progress.hidden=true;return}}progress.value=100;setTimeout(reload,350)}
+ zone.querySelector("[data-choose-files]").addEventListener("click",()=>input.click());input.addEventListener("change",()=>uploadFiles(input.files));zone.addEventListener("dragover",event=>{event.preventDefault();zone.classList.add("is-dragging")});zone.addEventListener("dragleave",()=>zone.classList.remove("is-dragging"));zone.addEventListener("drop",event=>{event.preventDefault();zone.classList.remove("is-dragging");uploadFiles(event.dataTransfer.files)});zone.addEventListener("keydown",event=>{if((event.key==="Enter"||event.key===" ")&&event.target===zone){event.preventDefault();input.click()}});
+ document.querySelectorAll("[data-asset-id]").forEach(card=>{const id=card.dataset.assetId;card.querySelector("[data-save-alt]")?.addEventListener("click",async()=>{try{await integrationApi.updateAsset(id,{altText:card.querySelector("[data-alt-input]").value});notify("Alt text saved");reload()}catch(error){report(error.message)}});card.querySelector("[data-primary]")?.addEventListener("click",async()=>{try{await integrationApi.setPrimary(communication.id,id);reload()}catch(error){report(error.message)}});card.querySelector("[data-replace]")?.addEventListener("change",async event=>{const file=event.target.files[0];if(!file)return;const asset=assets.find(a=>a.id===id),confirmPublished=Boolean(asset?.usage?.length)&&window.confirm("This image is used in published content. Replace the file at the existing permanent URL?");if(asset?.usage?.length&&!confirmPublished)return;try{await integrationApi.replaceAsset(id,file,confirmPublished,value=>{progress.hidden=false;progress.value=value});reload()}catch(error){report(`${error.message} ${error.details?.recovery||""}`.trim())}});card.querySelector("[data-delete]")?.addEventListener("click",async()=>{const asset=assets.find(a=>a.id===id);if(!window.confirm(asset?.usage?.length?"This artwork is used in published content. Permanently delete it anyway?":"Delete this artwork permanently?"))return;try{await integrationApi.deleteAsset(id,Boolean(asset?.usage?.length));reload()}catch(error){report(`${error.message} ${error.details?.recovery||""}`.trim())}});card.querySelectorAll("[data-move]").forEach(button=>button.addEventListener("click",async()=>{const ids=assets.map(a=>a.id),at=ids.indexOf(id),next=button.dataset.move==="up"?at-1:at+1;if(at<0||next<0||next>=ids.length)return;[ids[at],ids[next]]=[ids[next],ids[at]];try{await integrationApi.reorder(communication.id,ids);reload()}catch(error){report(error.message)}}))});
+}
 function bindAssetActions(assets) {
   bindCopyUrls(document);
   document.querySelectorAll("[data-copy-markdown]").forEach((button) => button.addEventListener("click", () => copyText(`![${button.dataset.alt}](${absolute(button.dataset.copyMarkdown)})`, "Markdown copied")));

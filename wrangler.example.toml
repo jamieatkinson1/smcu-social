@@ -1,0 +1,15 @@
+﻿# Copy to wrangler.toml only for local commissioning; the production Pages project
+# remains deployed by its existing Git integration.
+name = "smcu-social"
+pages_build_output_dir = "."
+compatibility_date = "2026-07-26"
+
+[[d1_databases]]
+binding = "PUBLICATIONS_DB"
+database_name = "smcu-communications"
+database_id = "REPLACE_WITH_EXISTING_D1_DATABASE_ID"
+migrations_dir = "migrations"
+
+[[r2_buckets]]
+binding = "ARTWORK_BUCKET"
+bucket_name = "smcu-communications-artwork"

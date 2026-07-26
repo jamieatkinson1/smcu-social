@@ -23,8 +23,8 @@ export async function verifyAccessIdentity(request, env, { fetchImpl = fetch, no
     throw new OperationalError("UNAUTHORISED","This identity is not authorised.",{status:403,recovery:"Sign in with Jamie’s authorised account."});
   return Object.freeze({name:"Jamie",emailVerified:true,expiresAt:payload.exp});
 }
-export function assertRequestSecurity(request) {
-  if(!["GET","POST"].includes(request.method)) throw new OperationalError("METHOD_NOT_ALLOWED","This request method is not allowed.",{status:405,recovery:"Return to the Desk and try again."});
+export function assertRequestSecurity(request, methods = ["GET","POST"]) {
+  if(!methods.includes(request.method)) throw new OperationalError("METHOD_NOT_ALLOWED","This request method is not allowed.",{status:405,recovery:"Return to the Desk and try again."});
   const origin=request.headers.get("Origin"); if(origin && origin!==new URL(request.url).origin) throw new OperationalError("ORIGIN_DENIED","This request origin is not allowed.",{status:403,recovery:"Open the Communications Desk directly."});
 }
 export const responseHeaders = Object.freeze({"Content-Type":"application/json; charset=utf-8","Cache-Control":"no-store","X-Content-Type-Options":"nosniff","Referrer-Policy":"no-referrer","X-Frame-Options":"DENY"});

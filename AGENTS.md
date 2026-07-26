@@ -74,3 +74,12 @@ Integrations should make the existing workflow work, not create new workflows.
 - Shopify operations remain limited to the configured blog and require explicit confirmation. Keep deterministic article handles, idempotency, dry-run tests, and official schema validation.
 - Buffer remains the social queue source of truth. Keep personal API keys and channel IDs in Worker secrets/variables, attach current-format media metadata, and reconcile on demand rather than polling frequently.
 - Never claim a service is connected until its authenticated health check succeeds. Never test by creating uncontrolled public content.
+
+## Artwork storage rules
+
+- Artwork belongs inside a communication; do not recreate a separate Asset navigation area.
+- Preserve all established CN-001 URLs exactly.
+- Store image bytes only in the `ARTWORK_BUCKET` R2 binding and metadata only in `PUBLICATIONS_DB`; never place binary data or secrets in `repository.json`.
+- Keep `/communications/api/assets*` behind Access with server-side identity verification. Keep generated `/assets/communications/*` GET/HEAD routes public for publishing platforms.
+- Public keys are generated server-side. Replacement preserves a stable URL; deletion of published artwork requires explicit operator confirmation.
+- Validate `npm.cmd run check`, `git diff --check`, the anonymous Access boundary, and legacy plus generated public asset retrieval before release.

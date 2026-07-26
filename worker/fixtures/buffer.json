@@ -1,0 +1,5 @@
+{
+  "organizations": {"data":{"account":{"organizations":[{"id":"org-1","name":"SMCU"}]}}},
+  "channels": {"data":{"channels":[{"id":"ig-1","name":"smcu","displayName":"SMCU Instagram","service":"instagram","isQueuePaused":false},{"id":"fb-1","name":"SMCU","displayName":"SMCU Facebook","service":"facebook","isQueuePaused":false}]}},
+  "post": {"data":{"createPost":{"post":{"id":"post-1","text":"Notice","dueAt":"2026-08-01T10:00:00Z","channelId":"ig-1","status":"scheduled"}}}}
+}

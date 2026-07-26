@@ -66,3 +66,11 @@ Do not increase clicks.
 Future work must connect existing functionality to real services.
 
 Integrations should make the existing workflow work, not create new workflows.
+
+## Operational integrations
+
+- All privileged routes stay below `/communications/api/*` so the existing Access policy covers code, data, and API together. Validate the Access JWT signature, issuer, audience, expiry, and `SMCU_ADMIN_EMAIL` server-side on every request.
+- `PUBLICATIONS_DB` is the sole production operational store. Migrations must be additive and non-destructive; `repository.json` remains editorial seed/reference data.
+- Shopify operations remain limited to the configured blog and require explicit confirmation. Keep deterministic article handles, idempotency, dry-run tests, and official schema validation.
+- Buffer remains the social queue source of truth. Keep personal API keys and channel IDs in Worker secrets/variables, attach current-format media metadata, and reconcile on demand rather than polling frequently.
+- Never claim a service is connected until its authenticated health check succeeds. Never test by creating uncontrolled public content.

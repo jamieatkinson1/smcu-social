@@ -1,5 +1,12 @@
-# Worker interfaces
+# Worker integration boundary
 
-Version 1.1 server-side contracts only. They contain no credentials and make no network calls.
+Cloudflare Pages Functions route `/communications/api/*` through `functions/communications/api/[[path]].js`. Every request validates the Cloudflare Access JWT and Jamie's configured identity before constructing D1, Shopify, or Buffer adapters.
 
-Cloudflare Access must authenticate every `/communications/*` request before it reaches the static application. The browser reads only the managed Access identity response; it never receives the authorization cookie value or Access headers. A future Worker may implement publishing adapters using secrets held only in Worker environment bindings. Browser modules must never receive service credentials.
+- `core/security.js`: Access JWT and request security.
+- `core/handler.js`: protected HTTP routes and sanitised responses.
+- `core/orchestrator.js`: readiness, confirmation, idempotency, partial results, retry.
+- `adapters/`: Shopify and Buffer GraphQL clients plus deterministic mocks.
+- `storage/publications.js`: D1 production and in-memory test adapters.
+- `fixtures/`: non-public contract responses.
+
+No Worker secret may be imported into, returned to, or duplicated within browser code. See the root README for binding names, scopes, commissioning, and recovery.

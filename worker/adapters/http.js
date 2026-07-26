@@ -1,0 +1,7 @@
+import { OperationalError } from "../core/errors.js";
+const wait=(ms)=>new Promise(resolve=>setTimeout(resolve,ms));
+export async function requestJson(url,options,{fetchImpl=fetch,timeoutMs=8000,retries=2}={}){
+ for(let attempt=0;;attempt++){const controller=new AbortController();const timer=setTimeout(()=>controller.abort(),timeoutMs);try{const response=await fetchImpl(url,{...options,signal:controller.signal});let body={};try{body=await response.json()}catch{}
+ if(response.ok)return {response,body}; const retryable=response.status===429||response.status>=500;if(retryable&&attempt<retries){await wait(Math.min(250*(2**attempt),1000));continue} throw new OperationalError(response.status===429?"RATE_LIMITED":response.status===401||response.status===403?"PERMISSION_DENIED":"UPSTREAM_ERROR",response.status===429?"The service is busy.":response.status===401||response.status===403?"The service connection is not authorised.":"The service did not accept the request.",{status:502,retryable,recovery:retryable?"Retry this destination shortly.":"Reconnect the service in Settings."});}
+ catch(error){if(error instanceof OperationalError)throw error;if(attempt<retries){await wait(Math.min(250*(2**attempt),1000));continue}throw new OperationalError(error.name==="AbortError"?"TIMEOUT":"NETWORK_ERROR",error.name==="AbortError"?"The service took too long to respond.":"The service could not be reached.",{status:502,retryable:true,recovery:"Retry this destination shortly."});}finally{clearTimeout(timer)}}
+}

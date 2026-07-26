@@ -1,0 +1,8 @@
+﻿import fs from "node:fs";import path from "node:path";import {execFileSync} from "node:child_process";
+const root=process.cwd();const files=[];function walk(dir){for(const entry of fs.readdirSync(dir,{withFileTypes:true})){if([".git","node_modules"].includes(entry.name))continue;const full=path.join(dir,entry.name);entry.isDirectory()?walk(full):files.push(full)}}walk(root);
+JSON.parse(fs.readFileSync(path.join(root,"communications/data/repository.json"),"utf8").replace(/^\uFEFF/,""));
+for(const file of files.filter(x=>x.endsWith(".js")))execFileSync(process.execPath,["--check",file],{stdio:"inherit"});
+const textFiles=files.filter(x=>/\.(js|json|html|css|md|sql)$/.test(x));const secretPatterns=[/shpat_[a-zA-Z0-9]{20,}/,/Bearer\s+[a-zA-Z0-9._-]{24,}/,/-----BEGIN (?:RSA |EC )?PRIVATE KEY-----/];for(const file of textFiles){const text=fs.readFileSync(file,"utf8");for(const pattern of secretPatterns)if(pattern.test(text))throw new Error(`Credential-like value found in ${path.relative(root,file)}`)}
+for(const html of files.filter(x=>x.endsWith(".html"))){const text=fs.readFileSync(html,"utf8");for(const match of text.matchAll(/(?:href|src)="([^"#?]+)"/g)){const ref=match[1];if(/^(https?:|data:)/.test(ref))continue;const target=ref.startsWith("/")?path.resolve(root,decodeURIComponent(ref.slice(1))):path.resolve(path.dirname(html),decodeURIComponent(ref));if(!fs.existsSync(target))throw new Error(`Broken path ${ref} in ${path.relative(root,html)}`)}}
+console.log(`Validated JSON, ${files.filter(x=>x.endsWith('.js')).length} JavaScript files, local routes, and credential patterns.`);
+

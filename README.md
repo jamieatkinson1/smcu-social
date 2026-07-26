@@ -1,71 +1,92 @@
 # SMCU Communications Desk
 
-Version 1.0 is Jamie’s private operating desk for publishing Standard Maintenance Company Uniform communications. It is a static, JSON-backed internal application with a deliberately small workflow: decide what needs attention, confirm the communication and artwork, then move it through publishing.
+Private, single-operator communications planning and publishing software for Standard Maintenance Company Uniform. The five product areas are Dashboard, Communications, Campaigns, Publishing, and Settings. `communications/data/repository.json` remains the canonical editorial seed; Cloudflare D1 stores operational publication outcomes.
 
-## Local preview and sign-in
+## Architecture
+
+- Static application: `communications/` contains route shells, the shared industrial stylesheet, browser modules, and canonical repository data.
+- Protected API: `functions/communications/api/[[path]].js` exposes same-origin Pages Functions endpoints beneath the Cloudflare Access policy.
+- Security: `worker/core/security.js` verifies the Access JWT signature, issuer, audience, expiry, and Jamie's configured identity on every privileged request. Requests fail closed; only GET/POST and same-origin browser requests are accepted.
+- Orchestration: `worker/core/orchestrator.js` validates readiness, confirmation, destinations, schedules, stale records, and idempotency. Destinations complete independently.
+- Services: `worker/adapters/shopify.js` and `buffer.js` contain narrow, server-only GraphQL clients with timeouts, bounded retry, safe error mapping, mocks, and dry-run support.
+- Persistence: `worker/storage/publications.js` writes publication outcomes to `PUBLICATIONS_DB`; `migrations/0001_publication_results.sql` is additive and never changes repository content.
+- Tests: Node's built-in test runner covers identity, request security, storage, orchestration, retries, partial failure, and adapter contracts. Fixtures never make public posts.
+
+Public CN-001 artwork remains at its established `/assets/company-notices/cn-001/` URLs. All Desk code, data, Functions, Settings, and Publishing routes remain under `/communications/*` and must stay protected by Cloudflare Access.
+
+## Local development
+
+Serve the repository root over HTTP (the local authentication provider works only on loopback):
 
 ```powershell
 python -m http.server 8000
 ```
 
-Open `http://localhost:8000/`. The local authentication provider is available only on `localhost`, `127.0.0.1`, or `::1`. Select **Continue as Jamie** to create an eight-hour, tab-scoped session in `sessionStorage`; no password or credential is stored. Direct `file://` use is unsupported because the Desk loads ES modules and repository JSON.
+Open `http://localhost:8000/communications/`. The browser uses a short-lived local Jamie session and never needs service credentials. Server tests use mocks:
 
-A production hostname remains locked by Cloudflare Access. After Access authorises the request, the Desk reads Jamie’s identity from Cloudflare’s managed `/cdn-cgi/access/get-identity` endpoint; the browser never handles an Access token, password, API key, or OAuth secret.
+```powershell
+npm.cmd test
+npm.cmd run check
+```
 
-## Version 1 product map
+Set `INTEGRATION_DRY_RUN=true` in a private local Worker environment when exercising live health checks without mutations. Never put `.dev.vars` or token values in Git.
 
-- **Dashboard** — Today’s work, current campaign, publishing queue, latest publication, and essential system state.
-- **Communications** — content, metadata, search, controlled registers, artwork, previews, and publishing readiness.
-- **Campaigns** — planning, linked communications, one checklist-derived progress measure, target date, and publishing overview.
-- **Publishing** — four operational lanes: Ready, Blocked, Scheduled, and Published. Each record explains its readiness and exposes one Publish action only when ready.
-- **Settings** — Jamie’s profile and honest connection state for future services.
+## Cloudflare configuration
 
-Legacy Asset, Calendar, Analytics, register, CN-001, and generic detail URLs remain compatibility routes. Assets now open inside the Communications context; Calendar resolves to Campaigns; Analytics resolves to Settings.
+Cloudflare Access must protect `/communications/*` and allow only Jamie. Keep only `/assets/*` public. Configure these Pages variables/secrets:
 
-## Architecture
+| Name | Kind | Purpose |
+|---|---|---|
+| `CF_ACCESS_TEAM_DOMAIN` | variable | Full Access team domain, for example `https://team.cloudflareaccess.com` |
+| `CF_ACCESS_AUD` | variable | Access application audience tag |
+| `SMCU_ADMIN_EMAIL` | encrypted secret | Jamie's sole authorised Access identity |
+| `PUBLICATIONS_DB` | D1 binding | Additive operational publication storage |
+| `INTEGRATION_DRY_RUN` | variable | `true` prevents Shopify/Buffer mutations |
+| `SHOPIFY_STORE_DOMAIN` | variable | Store `*.myshopify.com` hostname |
+| `SHOPIFY_API_VERSION` | variable | Defaults to `2026-07` |
+| `SHOPIFY_BLOG_ID` | variable | Target Company Memos blog GraphQL ID |
+| `SHOPIFY_PUBLIC_DOMAIN` | variable | Optional public storefront hostname for returned URLs |
+| `SHOPIFY_PUBLIC_BLOG_HANDLE` | variable | Optional target blog handle (`news` in the verified store) |
+| `SHOPIFY_ADMIN_ACCESS_TOKEN` | encrypted secret | Admin API token |
+| `BUFFER_ORGANIZATION_ID` | variable | Buffer organisation ID |
+| `BUFFER_INSTAGRAM_CHANNEL_ID` | variable | Connected Instagram channel ID |
+| `BUFFER_FACEBOOK_CHANNEL_ID` | variable | Connected Facebook channel ID |
+| `BUFFER_API_KEY` | encrypted secret | Personal API key |
 
-| Path | Responsibility |
-| --- | --- |
-| `communications/data/repository.json` | Canonical communications, campaigns, assets, workflow, service state, and history |
-| `communications/modules/repository.js` | Loading, schema validation, communication search, filters, counts, and queries |
-| `communications/modules/campaigns.js` | Campaign validation, reciprocal links, checklist progress, phase, and current campaign |
-| `communications/modules/assets.js` | Canonical artwork validation, relationships, usage, search, filters, and communication rendering |
-| `communications/modules/publishing.js` | Readiness reasons and the Ready/Blocked/Scheduled/Published queue |
-| `communications/modules/auth.js` | Local development sessions plus Cloudflare Access identity, logout, and safe return-path handling |
-| `communications/modules/ui.js` | Shared shell and focused data-driven renderers |
-| `communications/modules/app.js` | Authentication gate, route controller, search, clipboard, preview, and logout behaviour |
-| `worker/interfaces/` | Server-side-only contracts for authentication, Shopify, Buffer, Instagram, Facebook, Cloudflare, and Analytics |
-| `communications/styles.css` | Approved responsive SMCU controlled-document design system |
+Create/bind a free D1 database in the existing Pages project and apply `migrations/0001_publication_results.sql`. This migration only creates the publication table and index.
 
-The application has no build step and no framework. One record added to `repository.json` updates counts, search, registers, campaigns, artwork relationships, and publishing readiness automatically.
+Shopify needs the minimum content permissions required by the validated Admin GraphQL operations: `read_content`, `write_content`, `read_online_store_pages`, and `write_online_store_pages`. The adapter can only query the shop/blog and create or update an article in the configured blog; it contains no product, order, customer, theme, navigation, or inventory operations.
 
-## Data invariants
+Buffer personal API keys are appropriate for this single-operator tool. Grant `organizationsRead`, `channelsRead`, `postsRead`, and `postsWrite`; configure only the two intended channel IDs. The key is sent only from the Worker to `https://api.buffer.com`.
 
-- Communications reference canonical asset IDs; public asset URLs are stored once on asset records.
-- A communication belongs to zero or one campaign, with reciprocal campaign linkage.
-- Campaign progress derives only from checklist completion and is never manually edited.
-- Campaign artwork is derived from linked communications; assets are never copied.
-- Publishing readiness is derived from real content, artwork, workflow, status, and service configuration.
-- Service states are honest placeholders. The Desk never pretends an integration is connected.
-- The three CN-001 public paths are permanent contracts and must not be renamed or moved.
+## Safe commissioning and publishing
 
-## Publishing workflow
+1. Deploy with `INTEGRATION_DRY_RUN=true` and all bindings/secrets present.
+2. Sign in through Access and open Settings; verify storage, Shopify, Buffer, Instagram, and Facebook states.
+3. Run `npm.cmd run verify:integrations`; an unauthenticated redirect is an expected security result. Use Settings for the authenticated check.
+4. Preview one approved communication. Confirm the exact destinations and use a Shopify draft plus a future Buffer schedule.
+5. Inspect both external records, then cancel the Buffer test and remove the Shopify draft manually if desired.
+6. Set `INTEGRATION_DRY_RUN=false` only after the controlled test is accepted.
 
-1. Export approved artwork from Illustrator into the existing public asset structure.
-2. Add or update the canonical asset and communication records in `repository.json`.
-3. Link the communication to one campaign when appropriate.
-4. Confirm content, artwork, checklist, and real service readiness.
-5. Serve locally and test Login → Dashboard → Communication → Publishing.
-6. Review `git diff`. Commit and push only when explicitly requested.
+The UI always requires an explicit browser confirmation for real publishing. A deterministic request fingerprint and D1 primary key prevent double-click/refresh duplicates. Shopify also reuses its deterministic article handle. Successful destinations are never rolled back when another fails; retry re-runs only failed destinations.
 
-Version 1.0 defines the publishing boundary but makes no external calls. Version 1.1 can implement the Worker interfaces with server-side credentials and Cloudflare Access without changing the browser UI.
+## Recovery, rotation, and rollback
 
-## Production release gate
+- Failure rows contain a safe failure code and practical recovery message. Fix the connection/content issue and use retry; completed destinations are reused.
+- Buffer is the social queue source of truth. Refresh status on demand; do not run high-frequency polling.
+- Rotate Shopify or Buffer credentials in Cloudflare encrypted secrets and redeploy. Never edit browser files.
+- Disconnect a service by deleting its Worker secret and associated IDs; health immediately reports Not configured and publishing fails safely.
+- Roll back application code through the Cloudflare Pages deployment history or by reverting the Git commit. D1 publication history is additive and should not be deleted during rollback.
+- If Access verification fails, confirm team domain, audience, administrator identity, and Access policy before changing application code.
 
-Before release, configure Cloudflare Access to protect `/communications/*`, including its JSON and JavaScript. Keep `/assets/*` public because published communication URLs are external contracts. The checked-in `_headers` file supplies defence-in-depth response headers, but it does not authenticate requests.
+## Deployment
 
-Production is not authorised until the Access policy is verified with an allowed Jamie identity and a denied unauthorised session. Do not treat the browser session provider as access control.
+The production branch is `main`; the existing Cloudflare Pages Git integration deploys pushes. Do not use Wrangler for production deployment. Before pushing run:
 
-## Safety
+```powershell
+npm.cmd run check
+git diff --check
+git status --short
+```
 
-Never put credentials in repository JSON or browser JavaScript. Never fabricate publication or connection state, rename published assets, alter the Cloudflare custom domain, deploy with Wrangler, push, or commit unless explicitly instructed.
+After deployment, anonymously verify `/communications/` and `/communications/api/health` redirect to Access, and each established `/assets/company-notices/cn-001/` URL returns `200 image/png`. Then perform the authenticated Settings and Publishing checks in Chrome.

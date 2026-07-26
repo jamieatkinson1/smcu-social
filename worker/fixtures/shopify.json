@@ -1,0 +1,5 @@
+{
+  "shop": {"data":{"shop":{"id":"gid://shopify/Shop/1","name":"SMCU","primaryDomain":{"url":"https://example.test"}}}},
+  "articleCreate": {"data":{"articleCreate":{"article":{"id":"gid://shopify/Article/1","title":"Notice","handle":"smcu-cn-001-notice","image":null},"userErrors":[]}}},
+  "articleUserError": {"data":{"articleCreate":{"article":null,"userErrors":[{"code":"INVALID","field":["article","title"],"message":"Title is invalid"}]}}}
+}

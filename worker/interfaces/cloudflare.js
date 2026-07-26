@@ -1,5 +1,2 @@
-﻿export const cloudflareWorkerAdapter = Object.freeze({
-  name: "cloudflare-worker",
-  capabilities: Object.freeze(["authenticate", "publish", "schedule", "status"]),
-  async health() { return Object.freeze({ status: "Not configured" }); }
-});
+﻿export { handleApi as handleWorkerRequest } from "../core/handler.js";
+export { D1PublicationStore, MemoryPublicationStore } from "../storage/publications.js";

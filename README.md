@@ -76,17 +76,19 @@ The UI always requires an explicit browser confirmation for real publishing. A d
 - Buffer is the social queue source of truth. Refresh status on demand; do not run high-frequency polling.
 - Rotate Shopify or Buffer credentials in Cloudflare encrypted secrets and redeploy. Never edit browser files.
 - Disconnect a service by deleting its Worker secret and associated IDs; health immediately reports Not configured and publishing fails safely.
-- Roll back application code through the Cloudflare Pages deployment history or by reverting the Git commit. D1 publication history is additive and should not be deleted during rollback.
+- Roll back application code through the Cloudflare Worker deployment history or by reverting the Git commit. D1 publication history is additive and should not be deleted during rollback.
 - If Access verification fails, confirm team domain, audience, administrator identity, and Access policy before changing application code.
 
 ## Deployment
 
-The production branch is `main`; the existing Cloudflare Pages Git integration deploys pushes. Do not use Wrangler for production deployment. Before pushing run:
+The production branch is `main`; the production service is the existing `smcu-social` Cloudflare Worker. Build, validate, commit, push, and deploy with Wrangler:
 
 ```powershell
 npm.cmd run check
 git diff --check
 git status --short
+npx wrangler deploy --dry-run
+npx wrangler deploy
 ```
 
 After deployment, anonymously verify `/communications/` and `/communications/api/health` redirect to Access, and each established `/assets/company-notices/cn-001/` URL returns `200 image/png`. Then perform the authenticated Settings and Publishing checks in Chrome.

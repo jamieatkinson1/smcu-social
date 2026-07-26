@@ -1,8 +1,15 @@
-﻿# Copy to wrangler.toml only for local commissioning; the production Pages project
-# remains deployed by its existing Git integration.
+# Copy to wrangler.toml only for local commissioning; production deploys as
+# the existing smcu-social Worker.
 name = "smcu-social"
-pages_build_output_dir = "."
+main = "worker/index.js"
 compatibility_date = "2026-07-26"
+compatibility_flags = ["nodejs_compat"]
+
+[assets]
+directory = "dist"
+binding = "ASSETS"
+not_found_handling = "single-page-application"
+run_worker_first = ["/communications/api/*", "/assets/communications/*"]
 
 [[d1_databases]]
 binding = "PUBLICATIONS_DB"

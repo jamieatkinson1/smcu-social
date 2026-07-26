@@ -11,7 +11,7 @@ npx wrangler login
 npx wrangler r2 bucket create smcu-communications-artwork
 ```
 
-In the existing Cloudflare Pages project, add an R2 binding named exactly `ARTWORK_BUCKET` pointing to `smcu-communications-artwork`. This is a Pages Functions binding, not a browser variable.
+In the existing `smcu-social` Worker, add an R2 binding named exactly `ARTWORK_BUCKET` pointing to `smcu-communications-artwork`. This is a server-side Worker binding, not a browser variable.
 
 ## 2. Bind and migrate D1
 
@@ -32,7 +32,7 @@ Leave these public:
 - `/assets/communications/*` — generated R2-backed artwork route.
 - `/assets/company-notices/cn-001/*` — established static CN-001 artwork.
 
-No R2 public-development URL or credential is exposed. The Pages Function at `/assets/communications/*` reads only server-generated object keys. It permits GET/HEAD, returns the stored Content-Type and ETag, and applies `public, max-age=3600, stale-while-revalidate=86400` caching. Replacement deliberately preserves the URL; cache revalidation may take up to one hour unless the browser performs an ETag check.
+No R2 public-development URL or credential is exposed. The Worker route at `/assets/communications/*` reads only server-generated object keys. It permits GET/HEAD, returns the stored Content-Type and ETag, and applies `public, max-age=3600, stale-while-revalidate=86400` caching. Replacement deliberately preserves the URL; cache revalidation may take up to one hour unless the browser performs an ETag check.
 
 ## 4. Limits
 
@@ -46,7 +46,7 @@ The server verifies extension, declared MIME, file signature, dimensions, non-em
 
 ## 5. Verification
 
-After the Git deployment completes:
+After `npm.cmd run build` and `npx wrangler deploy` complete:
 
 ```powershell
 curl.exe -I https://social.standardmaintenance.co.uk/communications/api/assets?communicationId=CN-001

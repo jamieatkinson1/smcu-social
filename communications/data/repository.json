@@ -1,0 +1,580 @@
+{
+    "schemaVersion":  "1.0",
+    "repository":  {
+                       "name":  "SMCU Communications Desk",
+                       "owner":  "Communications Department"
+                   },
+    "sections":  [
+                     {
+                         "slug":  "company-notices",
+                         "code":  "CN",
+                         "title":  "Company Notices",
+                         "description":  "Official notices issued by Communications."
+                     },
+                     {
+                         "slug":  "general-issues",
+                         "code":  "GI",
+                         "title":  "General Issues",
+                         "description":  "General company communications."
+                     },
+                     {
+                         "slug":  "stores-notices",
+                         "code":  "SN",
+                         "title":  "Stores Notices",
+                         "description":  "Stores operations notices."
+                     },
+                     {
+                         "slug":  "works-memos",
+                         "code":  "WM",
+                         "title":  "Works Memos",
+                         "description":  "Internal works memoranda."
+                     }
+                 ],
+    "documents":  [
+                      {
+                          "id":  "CN-001",
+                          "title":  "SMCU Social Media",
+                          "department":  "Communications",
+                          "documentType":  "Company Notice",
+                          "section":  "company-notices",
+                          "author":  "Communications Department",
+                          "status":  "Published",
+                          "publishDate":  "2026-07-25",
+                          "createdDate":  "2026-07-25",
+                          "modifiedDate":  "2026-07-25",
+                          "summary":  "Approved social media carousel issued by the Communications Department.",
+                          "tags":  [
+                                       "social media",
+                                       "carousel",
+                                       "company notice"
+                                   ],
+                          "assets":  [
+                                         "AST-001",
+                                         "AST-002",
+                                         "AST-003"
+                                     ],
+                          "shopify":  {
+                                          "id":  null,
+                                          "status":  "Not connected",
+                                          "lastSync":  null
+                                      },
+                          "buffer":  {
+                                         "id":  null,
+                                         "status":  "Not connected",
+                                         "scheduledAt":  null,
+                                         "lastSync":  null
+                                     },
+                          "analytics":  {
+                                            "status":  "Not connected",
+                                            "lastUpdated":  null,
+                                            "metrics":  null
+                                        },
+                          "history":  [
+                                          {
+                                              "action":  "Created",
+                                              "date":  "2026-07-25",
+                                              "actor":  "Communications Department",
+                                              "note":  "Communication record created."
+                                          },
+                                          {
+                                              "action":  "Assets Added",
+                                              "date":  "2026-07-25",
+                                              "actor":  "Communications Department",
+                                              "note":  "Three approved carousel assets attached."
+                                          },
+                                          {
+                                              "action":  "Published",
+                                              "date":  "2026-07-25",
+                                              "actor":  "Communications Department",
+                                              "note":  "Communication approved for repository use."
+                                          }
+                                      ],
+                          "checklist":  [
+                                            {
+                                                "id":  "write",
+                                                "label":  "Write communication",
+                                                "completed":  true,
+                                                "completedDate":  "2026-07-25"
+                                            },
+                                            {
+                                                "id":  "artwork",
+                                                "label":  "Create artwork",
+                                                "completed":  true,
+                                                "completedDate":  "2026-07-25"
+                                            },
+                                            {
+                                                "id":  "assets",
+                                                "label":  "Upload assets",
+                                                "completed":  true,
+                                                "completedDate":  "2026-07-25"
+                                            },
+                                            {
+                                                "id":  "review",
+                                                "label":  "Review",
+                                                "completed":  true,
+                                                "completedDate":  "2026-07-25"
+                                            },
+                                            {
+                                                "id":  "schedule",
+                                                "label":  "Schedule",
+                                                "completed":  true,
+                                                "completedDate":  "2026-07-25"
+                                            },
+                                            {
+                                                "id":  "publish",
+                                                "label":  "Publish",
+                                                "completed":  true,
+                                                "completedDate":  "2026-07-25"
+                                            },
+                                            {
+                                                "id":  "archive",
+                                                "label":  "Archive",
+                                                "completed":  false,
+                                                "completedDate":  null
+                                            }
+                                        ],
+                          "notes":  [
+
+                                    ],
+                          "workflow":  {
+                                           "needsArtwork":  false,
+                                           "needsShopify":  false,
+                                           "needsScheduling":  false,
+                                           "needsReview":  false,
+                                           "readyToPublish":  false,
+                                           "awaitingAssets":  false
+                                       },
+                          "campaignId":  "CMP-001"
+                      }
+                  ],
+    "systems":  {
+                    "repository":  {
+                                       "status":  "Connected",
+                                       "note":  "Repository database available"
+                                   },
+                    "shopify":  {
+                                    "status":  "Not configured",
+                                    "note":  "Publishing adapter prepared"
+                                },
+                    "buffer":  {
+                                   "status":  "Not configured",
+                                   "note":  "Scheduling adapter prepared"
+                               },
+                    "instagram":  {
+                                      "status":  "Not configured",
+                                      "note":  "Publishing status adapter prepared"
+                                  },
+                    "facebook":  {
+                                     "status":  "Not configured",
+                                     "note":  "Publishing status adapter prepared"
+                                 },
+                    "analytics":  {
+                                      "status":  "Not configured",
+                                      "note":  "Reporting adapter prepared"
+                                  },
+                    "cloudflare":  {
+                                       "status":  "Not configured",
+                                       "note":  "Worker adapter prepared"
+                                   },
+                    "cloudflareAccess":  {
+                                             "status":  "Connected",
+                                             "note":  "Cloudflare Access protects /communications/*"
+                                         }
+                },
+    "campaigns":  [
+                      {
+                          "id":  "CMP-001",
+                          "title":  "SMCU Social Media Launch",
+                          "description":  "Plan and publish the first approved SMCU social media communication package.",
+                          "status":  "In Progress",
+                          "owner":  "Jamie",
+                          "created":  "2026-07-21",
+                          "modified":  "2026-07-25",
+                          "startDate":  "2026-07-21",
+                          "targetPublishDate":  "2026-07-25",
+                          "endDate":  "2026-08-01",
+                          "priority":  "Normal",
+                          "notes":  [
+
+                                    ],
+                          "tags":  [
+                                       "social media",
+                                       "launch",
+                                       "company notice"
+                                   ],
+                          "communications":  [
+                                                 "CN-001"
+                                             ],
+                          "assets":  [
+
+                                     ],
+                          "calendar":  [
+                                           {
+                                               "id":  "CAL-CMP-001-01",
+                                               "type":  "planned",
+                                               "label":  "Campaign start",
+                                               "date":  "2026-07-21",
+                                               "communicationId":  null
+                                           },
+                                           {
+                                               "id":  "CAL-CMP-001-02",
+                                               "type":  "publication",
+                                               "label":  "CN-001 publication",
+                                               "date":  "2026-07-25",
+                                               "communicationId":  "CN-001"
+                                           },
+                                           {
+                                               "id":  "CAL-CMP-001-03",
+                                               "type":  "target",
+                                               "label":  "Campaign close",
+                                               "date":  "2026-08-01",
+                                               "communicationId":  null
+                                           }
+                                       ],
+                          "shopify":  {
+                                          "id":  null,
+                                          "status":  "Not connected",
+                                          "lastSync":  null
+                                      },
+                          "buffer":  {
+                                         "id":  null,
+                                         "status":  "Not connected",
+                                         "scheduledAt":  null,
+                                         "lastSync":  null
+                                     },
+                          "instagram":  {
+                                            "id":  null,
+                                            "status":  "Not connected",
+                                            "lastSync":  null
+                                        },
+                          "facebook":  {
+                                           "id":  null,
+                                           "status":  "Not connected",
+                                           "lastSync":  null
+                                       },
+                          "analytics":  {
+                                            "status":  "Not connected",
+                                            "lastUpdated":  null,
+                                            "metrics":  null
+                                        },
+                          "progress":  {
+                                           "source":  "checklist"
+                                       },
+                          "history":  [
+                                          {
+                                              "action":  "Campaign created",
+                                              "date":  "2026-07-21",
+                                              "actor":  "Jamie",
+                                              "note":  "Campaign planning record created."
+                                          },
+                                          {
+                                              "action":  "Communication added",
+                                              "date":  "2026-07-25",
+                                              "actor":  "Jamie",
+                                              "note":  "CN-001 linked to the campaign."
+                                          }
+                                      ],
+                          "checklist":  [
+                                            {
+                                                "id":  "research",
+                                                "label":  "Research",
+                                                "completed":  true,
+                                                "completedDate":  "2026-07-21"
+                                            },
+                                            {
+                                                "id":  "planning",
+                                                "label":  "Planning",
+                                                "completed":  true,
+                                                "completedDate":  "2026-07-21"
+                                            },
+                                            {
+                                                "id":  "write",
+                                                "label":  "Write communications",
+                                                "completed":  true,
+                                                "completedDate":  "2026-07-25"
+                                            },
+                                            {
+                                                "id":  "artwork",
+                                                "label":  "Create artwork",
+                                                "completed":  true,
+                                                "completedDate":  "2026-07-25"
+                                            },
+                                            {
+                                                "id":  "review",
+                                                "label":  "Review",
+                                                "completed":  true,
+                                                "completedDate":  "2026-07-25"
+                                            },
+                                            {
+                                                "id":  "assets",
+                                                "label":  "Upload assets",
+                                                "completed":  true,
+                                                "completedDate":  "2026-07-25"
+                                            },
+                                            {
+                                                "id":  "buffer",
+                                                "label":  "Schedule Buffer",
+                                                "completed":  false,
+                                                "completedDate":  null
+                                            },
+                                            {
+                                                "id":  "shopify",
+                                                "label":  "Publish Shopify",
+                                                "completed":  false,
+                                                "completedDate":  null
+                                            },
+                                            {
+                                                "id":  "verify",
+                                                "label":  "Verify publication",
+                                                "completed":  false,
+                                                "completedDate":  null
+                                            },
+                                            {
+                                                "id":  "archive",
+                                                "label":  "Archive campaign",
+                                                "completed":  false,
+                                                "completedDate":  null
+                                            }
+                                        ]
+                      }
+                  ],
+    "assets":  [
+                   {
+                       "id":  "AST-001",
+                       "filename":  "cn-001 slide 1.png",
+                       "title":  "SMCU Social Media — Slide 1",
+                       "description":  "Opening panel for the SMCU Social Media company notice carousel.",
+                       "type":  "Carousel Slide",
+                       "category":  "Social Media",
+                       "created":  "2026-07-25",
+                       "modified":  "2026-07-25",
+                       "dimensions":  {
+                                          "width":  1080,
+                                          "height":  1350,
+                                          "unit":  "px"
+                                      },
+                       "orientation":  "Portrait",
+                       "format":  "PNG",
+                       "size":  {
+                                    "bytes":  46576,
+                                    "label":  "45.5 KB"
+                                },
+                       "altText":  "SMCU Social Media company notice, slide 1 of 3",
+                       "status":  "Published",
+                       "url":  "/assets/company-notices/cn-001/cn-001%20slide%201.png",
+                       "communication":  "CN-001",
+                       "campaign":  "CMP-001",
+                       "tags":  [
+                                    "social media",
+                                    "carousel",
+                                    "company notice",
+                                    "slide 1"
+                                ],
+                       "usage":  [
+
+                                 ],
+                       "history":  [
+                                       {
+                                           "action":  "Asset created",
+                                           "date":  "2026-07-25",
+                                           "actor":  "Communications Department",
+                                           "note":  "Approved carousel artwork added to the repository."
+                                       },
+                                       {
+                                           "action":  "Published",
+                                           "date":  "2026-07-25",
+                                           "actor":  "Communications Department",
+                                           "note":  "Asset published with CN-001."
+                                       }
+                                   ],
+                       "notes":  [
+
+                                 ],
+                       "shopify":  {
+                                       "id":  null,
+                                       "status":  "Not connected",
+                                       "lastSync":  null
+                                   },
+                       "buffer":  {
+                                      "id":  null,
+                                      "status":  "Not connected",
+                                      "lastSync":  null
+                                  },
+                       "analytics":  {
+                                         "status":  "Not connected",
+                                         "lastUpdated":  null,
+                                         "metrics":  null
+                                     },
+                       "illustrator":  {
+                                           "sourceId":  null,
+                                           "status":  "Not linked"
+                                       },
+                       "embroidery":  {
+                                          "sourceId":  null,
+                                          "status":  "Not linked"
+                                      },
+                       "social":  {
+                                      "publicationId":  null,
+                                      "status":  "Not connected"
+                                  }
+                   },
+                   {
+                       "id":  "AST-002",
+                       "filename":  "cn-001 slide 2.png",
+                       "title":  "SMCU Social Media — Slide 2",
+                       "description":  "Information panel for the SMCU Social Media company notice carousel.",
+                       "type":  "Carousel Slide",
+                       "category":  "Social Media",
+                       "created":  "2026-07-25",
+                       "modified":  "2026-07-25",
+                       "dimensions":  {
+                                          "width":  1080,
+                                          "height":  1350,
+                                          "unit":  "px"
+                                      },
+                       "orientation":  "Portrait",
+                       "format":  "PNG",
+                       "size":  {
+                                    "bytes":  56183,
+                                    "label":  "54.9 KB"
+                                },
+                       "altText":  "SMCU Social Media company notice, slide 2 of 3",
+                       "status":  "Published",
+                       "url":  "/assets/company-notices/cn-001/cn-001%20slide%202.png",
+                       "communication":  "CN-001",
+                       "campaign":  "CMP-001",
+                       "tags":  [
+                                    "social media",
+                                    "carousel",
+                                    "company notice",
+                                    "slide 2"
+                                ],
+                       "usage":  [
+
+                                 ],
+                       "history":  [
+                                       {
+                                           "action":  "Asset created",
+                                           "date":  "2026-07-25",
+                                           "actor":  "Communications Department",
+                                           "note":  "Approved carousel artwork added to the repository."
+                                       },
+                                       {
+                                           "action":  "Published",
+                                           "date":  "2026-07-25",
+                                           "actor":  "Communications Department",
+                                           "note":  "Asset published with CN-001."
+                                       }
+                                   ],
+                       "notes":  [
+
+                                 ],
+                       "shopify":  {
+                                       "id":  null,
+                                       "status":  "Not connected",
+                                       "lastSync":  null
+                                   },
+                       "buffer":  {
+                                      "id":  null,
+                                      "status":  "Not connected",
+                                      "lastSync":  null
+                                  },
+                       "analytics":  {
+                                         "status":  "Not connected",
+                                         "lastUpdated":  null,
+                                         "metrics":  null
+                                     },
+                       "illustrator":  {
+                                           "sourceId":  null,
+                                           "status":  "Not linked"
+                                       },
+                       "embroidery":  {
+                                          "sourceId":  null,
+                                          "status":  "Not linked"
+                                      },
+                       "social":  {
+                                      "publicationId":  null,
+                                      "status":  "Not connected"
+                                  }
+                   },
+                   {
+                       "id":  "AST-003",
+                       "filename":  "cn-001 slide 3.png",
+                       "title":  "SMCU Social Media — Slide 3",
+                       "description":  "Closing panel for the SMCU Social Media company notice carousel.",
+                       "type":  "Carousel Slide",
+                       "category":  "Social Media",
+                       "created":  "2026-07-25",
+                       "modified":  "2026-07-25",
+                       "dimensions":  {
+                                          "width":  1080,
+                                          "height":  1350,
+                                          "unit":  "px"
+                                      },
+                       "orientation":  "Portrait",
+                       "format":  "PNG",
+                       "size":  {
+                                    "bytes":  43326,
+                                    "label":  "42.3 KB"
+                                },
+                       "altText":  "SMCU Social Media company notice, slide 3 of 3",
+                       "status":  "Published",
+                       "url":  "/assets/company-notices/cn-001/cn-001%20slide%203.png",
+                       "communication":  "CN-001",
+                       "campaign":  "CMP-001",
+                       "tags":  [
+                                    "social media",
+                                    "carousel",
+                                    "company notice",
+                                    "slide 3"
+                                ],
+                       "usage":  [
+
+                                 ],
+                       "history":  [
+                                       {
+                                           "action":  "Asset created",
+                                           "date":  "2026-07-25",
+                                           "actor":  "Communications Department",
+                                           "note":  "Approved carousel artwork added to the repository."
+                                       },
+                                       {
+                                           "action":  "Published",
+                                           "date":  "2026-07-25",
+                                           "actor":  "Communications Department",
+                                           "note":  "Asset published with CN-001."
+                                       }
+                                   ],
+                       "notes":  [
+
+                                 ],
+                       "shopify":  {
+                                       "id":  null,
+                                       "status":  "Not connected",
+                                       "lastSync":  null
+                                   },
+                       "buffer":  {
+                                      "id":  null,
+                                      "status":  "Not connected",
+                                      "lastSync":  null
+                                  },
+                       "analytics":  {
+                                         "status":  "Not connected",
+                                         "lastUpdated":  null,
+                                         "metrics":  null
+                                     },
+                       "illustrator":  {
+                                           "sourceId":  null,
+                                           "status":  "Not linked"
+                                       },
+                       "embroidery":  {
+                                          "sourceId":  null,
+                                          "status":  "Not linked"
+                                      },
+                       "social":  {
+                                      "publicationId":  null,
+                                      "status":  "Not connected"
+                                  }
+                   }
+               ]
+}

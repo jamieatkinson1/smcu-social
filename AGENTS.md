@@ -1,19 +1,68 @@
-﻿# Durable repository instructions
+# Durable repository instructions
 
-## Product and design
+## Product mission
 
-- This is SMCU internal company software, not a marketing site. Preserve the warm paper, dark steel, precise borders, compact uppercase labels, monospace identifiers, and restrained status colour.
-- Keep layouts accessible and usable at 320px. Maintain semantic landmarks, visible focus, useful alt text, keyboard operation, and reduced-motion support.
+- This is Jamie’s private, single-operator SMCU Communications Desk. It is not SaaS, CRM, enterprise software, a file manager, or a generic marketing platform.
+- The clothing business is the product; the Desk is a tool. Keep only work that helps Jamie prepare or publish communications.
+- The Dashboard answers one question: “What should I do next?” It contains only Today’s Work, Current Campaign, Publishing Queue, Recent Publication, and System Status.
+- Primary navigation is fixed to Dashboard, Communications, Campaigns, Publishing, and Settings. Do not restore separate Assets, Calendar, or Analytics navigation.
+- Prefer one obvious action, progressive disclosure, fewer boxes, and less than three clicks to important work.
 
-## Architecture and safety
+## Visual identity
 
-- Keep the site static and dependency-light. `communications/data.js` is the single source of truth for sections, documents, asset URLs, counts, and integration placeholders.
-- Reuse `communications/script.js`; never hard-code counts or document metadata into route HTML.
-- Keep Shopify and Buffer state in each record's `integrations` object. Never expose credentials in browser JavaScript or fabricate connected integrations, metrics, IDs, or statuses.
-- Existing public asset URLs are contracts. Do not rename, move, or silently replace published files, especially the three CN-001 images.
+- Preserve the approved warm paper, dark industrial shell, lime accent rule, controlled-document aesthetic, condensed utility type, monospace identifiers, approved stamp, restrained status colours, and register numbering.
+- Refine density without redesigning. Keep the desktop dashboard within a typical 1920×1080 viewport at 100% zoom.
+- Maintain landmarks, visible focus, useful alt text, keyboard operation, native dialogs, live regions, reduced motion, and layouts down to 320px.
 
-## Workflow
+## Canonical architecture
 
-- Inspect files and Git status before editing; preserve unrelated changes.
-- Serve from the repository root. Test navigation, console errors, images, dialogs, clipboard actions, keyboard focus, and desktop/mobile layouts.
-- Review the diff before committing. Never use destructive Git, push, deploy with Wrangler, or alter the Cloudflare custom domain unless explicitly instructed.
+- `communications/data/repository.json` is the single source of truth. Never duplicate records, relationships, counts, progress, readiness, system state, or public URLs in HTML.
+- `repository.js` owns communication validation and queries; `campaigns.js` owns campaign links and checklist progress; `assets.js` owns canonical artwork and usage; `publishing.js` owns publishing readiness; `auth.js` owns the replaceable browser authentication boundary.
+- `ui.js` contains reusable renderers and `app.js` owns routing and interactions. Route HTML files are intentionally thin.
+- `worker/interfaces/` is server-side preparation only. Browser code must not import it.
+- Preserve generic and historical compatibility routes, but map obsolete module routes into the five Version 1 product areas.
+
+## Relationship and publishing rules
+
+- A communication belongs to zero or one campaign; links must be reciprocal.
+- Campaign progress derives from `checklist[]`; never store or edit a percentage.
+- Communications reference canonical asset IDs only. Derive campaign assets from linked communications and never copy asset objects.
+- A Publish action appears only when readiness is genuinely Ready. Blocked records must say exactly what is missing.
+- Do not connect external APIs or imply that Shopify, Buffer, Instagram, Facebook, Analytics, Cloudflare, or Cloudflare Access is configured when it is not.
+
+## Authentication and secrets
+
+- Local mock authentication is allowed only on loopback hosts and stores an expiring Jamie session in `sessionStorage`; it must never contain a password.
+- Production must remain locked unless Cloudflare Access protects `/communications/*` and a trusted edge provider supplies authenticated context. Keep `/assets/*` public because published URLs are contracts. Never weaken the production fallback to make local testing easier.
+- Never place passwords, API keys, OAuth tokens, session secrets, or Worker secrets in browser JavaScript, HTML, JSON, Git, screenshots, logs, or documentation.
+- Version 1.1 implementations belong behind Cloudflare Worker/Access interfaces with server-side secret storage.
+
+## Asset safety
+
+- Existing public asset URLs are contracts. Never rename, move, silently replace, or re-encode published files, especially the three CN-001 images.
+- Store verified filenames, dimensions, formats, URLs, and meaningful alt text on canonical asset records.
+- Artwork browsing belongs in Communications; do not recreate a separate Asset application.
+
+## Working and validation workflow
+
+- Inspect the worktree before editing and preserve unrelated changes. Use `rg` first when available; fall back cleanly when it is not.
+- Serve from the repository root; direct `file://` use is unsupported.
+- Validate JSON and JavaScript, repository/campaign/asset relationships, progress and publishing readiness, authentication expiry and safe returns, every route, CSS/JS MIME types, broken paths, clipboard/preview controls, keyboard focus, and 1920×1080 plus mobile layouts.
+- Review the whole daily path as Jamie: Login → Dashboard → Communication/Campaign → Publishing → Logout.
+- Review `git diff` before handoff. Never use destructive Git, deploy, push, commit, or alter the Cloudflare domain unless explicitly instructed.
+
+## Product Freeze
+
+Version 1 UI is frozen.
+
+Do not introduce new modules.
+
+Do not redesign navigation.
+
+Do not add dashboards.
+
+Do not increase clicks.
+
+Future work must connect existing functionality to real services.
+
+Integrations should make the existing workflow work, not create new workflows.

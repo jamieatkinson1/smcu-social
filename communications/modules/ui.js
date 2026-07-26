@@ -1,7 +1,14 @@
 const ESCAPE = { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" };
 const NAVIGATION = [["dashboard", "Dashboard", "index.html"], ["communications", "Communications", "communications/index.html"], ["campaigns", "Campaigns", "campaigns/index.html"], ["publishing", "Publishing", "publishing/index.html"], ["settings", "Settings", "settings/index.html"]];
 export const escapeHtml = (value = "") => String(value).replace(/[&<>"']/g, (character) => ESCAPE[character]);
-export const formatDate = (value) => value ? new Intl.DateTimeFormat("en-GB", { day: "2-digit", month: "short", year: "numeric" }).format(new Date(`${value}T12:00:00`)) : "Not set";
+export const formatDate = (value) => {
+  if (!value) return "Not set";
+  const text = String(value);
+  const parsed = new Date(/^\d{4}-\d{2}-\d{2}$/.test(text) ? `${text}T12:00:00` : text);
+  return Number.isNaN(parsed.getTime())
+    ? "Not set"
+    : new Intl.DateTimeFormat("en-GB", { day: "2-digit", month: "short", year: "numeric" }).format(parsed);
+};
 export const statusChip = (status) => `<span class="status status-${String(status).toLowerCase().replace(/\s+/g, "-")}">${escapeHtml(status)}</span>`;
 
 export function renderShell(content, { route, active = "dashboard", session, breadcrumbs = [] }) {

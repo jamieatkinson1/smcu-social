@@ -1,4 +1,4 @@
-const CAMPAIGN_STATUSES = ["Planning", "In Progress", "Ready", "Publishing", "Complete", "Archived"];
+const CAMPAIGN_STATUSES = ["Planning", "Draft", "Active", "Paused", "In Progress", "Ready", "Publishing", "Complete", "Archived"];
 const CAMPAIGN_FIELDS = ["id", "title", "description", "status", "owner", "created", "modified", "startDate", "targetPublishDate", "endDate", "priority", "notes", "tags", "communications", "assets", "calendar", "shopify", "buffer", "instagram", "facebook", "analytics", "progress", "history", "checklist"];
 const PHASES = { research: "Research", planning: "Planning", write: "Content", artwork: "Artwork", review: "Review", assets: "Asset preparation", buffer: "Scheduling", shopify: "Publishing", verify: "Verification", archive: "Closeout" };
 
@@ -38,7 +38,7 @@ export function getCampaignPhase(campaign) { const next = getCampaignNextAction(
 
 export function getCurrentCampaign(repository) {
   const active = repository.campaigns.filter((campaign) => !["Complete", "Archived"].includes(campaign.status));
-  return active.find((campaign) => ["In Progress", "Ready", "Publishing"].includes(campaign.status))
-    || active.find((campaign) => campaign.status === "Planning")
+  return active.find((campaign) => ["Active", "In Progress", "Ready", "Publishing"].includes(campaign.status))
+    || active.find((campaign) => ["Draft", "Planning", "Paused"].includes(campaign.status))
     || null;
 }

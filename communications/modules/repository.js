@@ -1,7 +1,7 @@
 import { validateCampaigns } from "./campaigns.js";
 import { validateAssets } from "./assets.js";
 
-const VALID_STATUSES = ["Draft", "Review", "Approved", "Scheduled", "Published", "Archived"];
+const VALID_STATUSES = ["Draft", "In progress", "Review", "Ready", "Approved", "Scheduled", "Published", "Archived"];
 const REQUIRED_FIELDS = ["id", "title", "department", "documentType", "author", "status", "createdDate", "modifiedDate", "summary", "tags", "assets", "shopify", "buffer", "analytics", "history", "checklist", "notes", "workflow", "campaignId"];
 
 let database;

@@ -10,4 +10,4 @@ for (const entry of ["index.html", "_headers", "assets", "communications"]) {
   });
 }
 
-console.log("Built the public Communications Desk into dist/.");
+console.log("Built the public SMCU Image Library into dist/.");

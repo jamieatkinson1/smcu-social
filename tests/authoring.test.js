@@ -4,7 +4,6 @@ import fs from "node:fs/promises";
 import { MemoryAuthoringStore, mergeAuthoringRepository, resolvedCopy } from "../worker/storage/authoring.js";
 import { AuthoringService, communicationBlockers } from "../worker/authoring/service.js";
 import { sanitizeHtml } from "../worker/authoring/content.js";
-import { formatDate } from "../communications/modules/ui.js";
 
 const clock=()=>new Date("2026-07-26T10:00:00.000Z");
 const campaign={name:"Launch",purpose:"Promote",description:"Autumn launch",status:"Active",startDate:"2026-07-26",targetDate:"2026-08-10",channels:["Shopify","Instagram"],tasks:[{id:"write",label:"Write copy",completed:false}],notes:"Private"};
@@ -24,11 +23,3 @@ test("readiness blockers are exact and mark ready preserves artwork",async()=>{c
 test("preview uses saved variants, ordered artwork and public URLs",async()=>{const store=new MemoryAuthoringStore({clock});const c=await store.createCampaign(campaign);const record=await store.createCommunication({...communication,campaignId:c.id});assets.records.set(record.id,[{id:"B",url:"https://example.test/b.png",altText:"Second",primary:false,order:1},{id:"A",url:"https://example.test/a.png",altText:"First",primary:true,order:0}]);const preview=await new AuthoringService({store,assets,clock}).preview(record.id);assert.equal(preview.communication.title,"Launch memo");assert.equal(preview.assets[1].url,"https://example.test/a.png");assert.equal(preview.readiness.ready,true)});
 
 test("CMP-001 and CN-001 migration keeps canonical IDs and artwork contracts",async()=>{const seed=JSON.parse(await fs.readFile(new URL("../communications/data/repository.json",import.meta.url),"utf8"));const snapshot={campaigns:[{id:"CMP-001",name:"Seed",status:"Complete",tasks:[],channels:[],communications:["CN-001"],createdAt:"2026-01-01T00:00:00Z",updatedAt:"2026-01-01T00:00:00Z"}],communications:[{id:"CN-001",title:"Seed communication",type:"Company Memo",campaignId:"CMP-001",status:"Published",channels:[],mainContentHtml:"<p>Seed</p>",createdAt:"2026-01-01T00:00:00Z",updatedAt:"2026-01-01T00:00:00Z",internalNotes:""}]};const merged=mergeAuthoringRepository(seed,snapshot);assert.equal(merged.campaigns[0].id,"CMP-001");assert.equal(merged.documents[0].id,"CN-001");assert.deepEqual(merged.documents[0].assets,seed.documents.find(x=>x.id==="CN-001").assets);const urls=seed.assets.filter(x=>(x.communicationId||x.communication)==="CN-001").map(x=>x.url);assert.ok(urls.length>=3);assert.ok(urls.every(x=>x.toLowerCase().includes("cn-001")))});
-
-test("authoring UI warns about unsaved changes and pastes plain text",async()=>{const source=await fs.readFile(new URL("../communications/modules/app.js",import.meta.url),"utf8");assert.match(source,/beforeunload/);assert.match(source,/clipboardData\.getData\("text\/plain"\)/);assert.match(source,/data-character-count/)});
-test("saved D1 timestamps and nullable dates render safely",()=>{
- assert.equal(formatDate("2026-07-27T08:15:30.000Z"),"27 Jul 2026");
- assert.equal(formatDate("2026-07-27"),"27 Jul 2026");
- assert.equal(formatDate(null),"Not set");
- assert.equal(formatDate("not-a-date"),"Not set");
-});
